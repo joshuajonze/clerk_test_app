@@ -1,4 +1,3 @@
-<%# app/views/shared/_auth_modal.html.erb %>
 <div id="auth-modal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
   <div class="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md mx-auto relative">
     <button id="close-auth-modal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10">
@@ -47,7 +46,17 @@
           // Wait for Clerk to be available (it should be loaded in application layout)
           if (typeof Clerk !== 'undefined') {
             if (!clerkLoaded) {
-              await Clerk.load();
+              await Clerk.load({
+                // Add sign up and sign in callbacks
+                signInConfig: {
+                  // After successful sign in
+                  redirectUrl: '/sessions/after_signup'
+                },
+                signUpConfig: {
+                  // After successful sign up
+                  redirectUrl: '/sessions/after_signup'
+                }
+              });
               clerkLoaded = true;
             }
             

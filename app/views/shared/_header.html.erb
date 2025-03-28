@@ -17,15 +17,15 @@
         <li><a href="#" class="block py-2 md:py-1 md:px-4 hover:text-red-600">Documents</a></li>
         <li><a href="#" class="block py-2 md:py-1 md:px-4 hover:text-red-600">Contact</a></li>
         <% if clerk.user? %>
-          <li>
-            <div class="block py-2 md:py-1 md:px-4">
-              <span class="mr-2"><%= clerk.user["first_name"] %></span>
-              <button onclick="window.location.href='#'" class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded">
-                Sign Out
-              </button>
-            </div>
-          </li>
-        <% else %>
+  <li>
+    <div class="block py-2 md:py-1 md:px-4">
+      <span class="mr-2"><%= clerk.user["first_name"] %></span>
+      <button onclick="Clerk.signOut().then(() => {window.location.href = '/'})" class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded">
+        Sign Out
+      </button>
+    </div>
+  </li>
+<% else %>
           <li>
             <button id="open-auth-modal" class="bg-red-600 hover:bg-red-700 text-white py-1 px-4 rounded ml-md-4 mt-2 md:mt-0">
               Sign In / Register
