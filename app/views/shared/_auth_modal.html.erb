@@ -1,0 +1,108 @@
+<%# app/views/shared/_auth_modal.html.erb %>
+<div id="auth-modal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md mx-auto relative">
+    <button id="close-auth-modal" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 z-10">
+      <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+    
+    <h2 class="text-xl sm:text-2xl font-bold mb-4 text-center">Sign In or Register</h2>
+    
+    <!-- Loading indicator -->
+    <div id="clerk-loading" class="text-center py-8">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-red-600"></div>
+      <p class="mt-2">Loading authentication...</p>
+    </div>
+    
+    <!-- Clerk authentication component will be mounted here -->
+    <div id="clerk-auth-container" class="w-full"></div>
+  </div>
+</div>
+
+<!-- Load Clerk JS - moved to application layout to ensure it's loaded early -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize modal controls
+    const openModalBtn = document.getElementById('open-auth-modal');
+    const authModal = document.getElementById('auth-modal');
+    const closeModalBtn = document.getElementById('close-auth-modal');
+    const clerkmount = document.getElementById('clerk-auth-container');
+    const loading = document.getElementById('clerk-loading');
+    
+    let clerkLoaded = false;
+    
+    if (openModalBtn && authModal && closeModalBtn) {
+      // Function to open modal and initialize Clerk
+      const openModal = async function() {
+        // Show modal and loading indicator
+        authModal.classList.remove('hidden');
+        loading.classList.remove('hidden');
+        clerkmount.classList.add('hidden');
+        
+        // Ensure body doesn't scroll when modal is open
+        document.body.classList.add('overflow-hidden');
+        
+        try {
+          // Wait for Clerk to be available (it should be loaded in application layout)
+          if (typeof Clerk !== 'undefined') {
+            if (!clerkLoaded) {
+              await Clerk.load();
+              clerkLoaded = true;
+            }
+            
+            // Clear previous instance if any
+            clerkmount.innerHTML = '';
+            
+            // Mount the Clerk SignIn component
+            Clerk.mountSignIn(clerkmount);
+            
+            // Hide loading, show clerk component
+            loading.classList.add('hidden');
+            clerkmount.classList.remove('hidden');
+          } else {
+            console.error('Clerk not available');
+            alert('Authentication service unavailable. Please try again later.');
+          }
+        } catch (error) {
+          console.error('Error loading Clerk:', error);
+          alert('Authentication service failed to load. Please try again later.');
+        }
+      };
+      
+      openModalBtn.addEventListener('click', openModal);
+      
+      closeModalBtn.addEventListener('click', function() {
+        authModal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      });
+      
+      // Close modal when clicking outside
+      window.addEventListener('click', function(event) {
+        if (event.target === authModal) {
+          authModal.classList.add('hidden');
+          document.body.classList.remove('overflow-hidden');
+        }
+      });
+      
+      // Handle the home page button if it exists
+      const homeAuthBtn = document.getElementById('home-auth-btn');
+      if (homeAuthBtn) {
+        homeAuthBtn.addEventListener('click', openModal);
+      }
+    }
+  });
+</script>
+
+<style>
+  /* Custom CSS for better modal experience */
+  #clerk-auth-container {
+    width: 100%;
+    min-height: 400px; /* Ensure enough space for the component */
+  }
+  
+  /* Prevent scrolling when modal is open */
+  body.overflow-hidden {
+    overflow: hidden;
+  }
+</style>
