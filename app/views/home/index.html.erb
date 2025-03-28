@@ -1,0 +1,21 @@
+<!-- app/views/home/index.html.erb -->
+<h1>Clerk Auth Test</h1>
+
+<% if @user %>
+  <p>Welcome, <%= @user["first_name"] %>!</p>
+  <p>Email: <%= @user["email_addresses"].find { |e| e["id"] == @user["primary_email_address_id"] }["email_address"] %></p>
+<% else %>
+  <p>Not signed in</p>
+  <!-- Add Clerk frontend component -->
+  <script type="text/javascript" src="https://precise-snapper-90.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" 
+    data-clerk-publishable-key="<%= Rails.application.credentials.clerk[:publishable_key] || ENV['CLERK_PUBLISHABLE_KEY'] %>">
+  </script>
+  <div id="sign-in"></div>
+  <script>
+    window.addEventListener("load", async function() {
+      await Clerk.load();
+      const signInDiv = document.getElementById("sign-in");
+      Clerk.mountSignIn(signInDiv);
+    });
+  </script>
+<% end %>
