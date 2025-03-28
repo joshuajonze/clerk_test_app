@@ -1,0 +1,50 @@
+# app/views/shared/_header.html.erb
+<header class="site-header">
+  <div class="container mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
+    <div class="flex items-center">
+      <a href="/" class="text-2xl font-bold text-red-600">Quail Creek HOA</a>
+    </div>
+    
+    <button id="mobile-menu-button" class="md:hidden flex items-center px-3 py-2 rounded text-gray-700 hover:text-red-600">
+      <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+        <path d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/>
+      </svg>
+    </button>
+    
+    <nav id="navigation" class="hidden md:flex md:items-center w-full md:w-auto">
+      <ul class="flex flex-col md:flex-row mt-4 md:mt-0 text-base">
+        <li><a href="/" class="block py-2 md:py-1 md:px-4 hover:text-red-600">Home</a></li>
+        <li><a href="#" class="block py-2 md:py-1 md:px-4 hover:text-red-600">About</a></li>
+        <li><a href="#" class="block py-2 md:py-1 md:px-4 hover:text-red-600">Documents</a></li>
+        <li><a href="#" class="block py-2 md:py-1 md:px-4 hover:text-red-600">Contact</a></li>
+        <% if clerk.user? %>
+          <li>
+            <div class="block py-2 md:py-1 md:px-4">
+              <span class="mr-2"><%= clerk.user["first_name"] %></span>
+              <button onclick="window.location.href='#'" class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded">
+                Sign Out
+              </button>
+            </div>
+          </li>
+        <% else %>
+          <li>
+            <button onclick="window.location.href='/'" class="bg-red-600 hover:bg-red-700 text-white py-1 px-4 rounded ml-md-4 mt-2 md:mt-0">
+              Sign In / Register
+            </button>
+          </li>
+        <% end %>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const button = document.getElementById('mobile-menu-button');
+    const nav = document.getElementById('navigation');
+    
+    button.addEventListener('click', function() {
+      nav.classList.toggle('hidden');
+    });
+  });
+</script>

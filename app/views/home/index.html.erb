@@ -1,21 +1,43 @@
-<!-- app/views/home/index.html.erb -->
-<h1>Clerk Auth Test</h1>
-
-<% if @user %>
-  <p>Welcome, <%= @user["first_name"] %>!</p>
-  <p>Email: <%= @user["email_addresses"].find { |e| e["id"] == @user["primary_email_address_id"] }["email_address"] %></p>
-<% else %>
-  <p>Not signed in</p>
-  <!-- Add Clerk frontend component -->
-  <script type="text/javascript" src="https://precise-snapper-90.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" 
-    data-clerk-publishable-key="<%= Rails.application.credentials.clerk[:publishable_key] || ENV['CLERK_PUBLISHABLE_KEY'] %>">
-  </script>
-  <div id="sign-in"></div>
-  <script>
-    window.addEventListener("load", async function() {
-      await Clerk.load();
-      const signInDiv = document.getElementById("sign-in");
-      Clerk.mountSignIn(signInDiv);
-    });
-  </script>
-<% end %>
+# app/views/home/index.html.erb
+<div class="bg-white rounded-lg shadow-md p-6">
+  <h1 class="text-3xl font-bold mb-6">Welcome to Quail Creek HOA</h1>
+  
+  <% if @user %>
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+      <p class="font-bold">Welcome, <%= @user["first_name"] %>!</p>
+      <p>Email: <%= @user["email_addresses"].find { |e| e["id"] == @user["primary_email_address_id"] }["email_address"] %></p>
+    </div>
+    
+    <div class="mt-4">
+      <h2 class="text-2xl font-bold mb-4">Community Updates</h2>
+      <p class="mb-4">Stay informed about the latest news and events in our community.</p>
+      
+      <div class="bg-gray-100 p-4 rounded mb-4">
+        <h3 class="font-bold">Annual HOA Meeting</h3>
+        <p>The annual HOA meeting will be held on April 15th at the community center.</p>
+      </div>
+      
+      <div class="bg-gray-100 p-4 rounded">
+        <h3 class="font-bold">Pool Opening</h3>
+        <p>The community pool will open for the season on May 1st.</p>
+      </div>
+    </div>
+  <% else %>
+    <div class="text-center py-8">
+      <p class="text-xl mb-6">Please sign in to access your HOA account and community information.</p>
+      
+      <!-- Add Clerk frontend component -->
+      <script type="text/javascript" src="https://precise-snapper-90.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" 
+        data-clerk-publishable-key="<%= Rails.application.credentials.clerk[:publishable_key] || ENV['CLERK_PUBLISHABLE_KEY'] %>">
+      </script>
+      <div id="sign-in" class="max-w-md mx-auto"></div>
+      <script>
+        window.addEventListener("load", async function() {
+          await Clerk.load();
+          const signInDiv = document.getElementById("sign-in");
+          Clerk.mountSignIn(signInDiv);
+        });
+      </script>
+    </div>
+  <% end %>
+</div>
