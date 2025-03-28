@@ -19,7 +19,7 @@
         <% if clerk.user? %>
   <li>
     <div class="block py-2 md:py-1 md:px-4">
-      <span class="mr-2"><%= clerk.user["first_name"] %></span>
+      <span class="mr-2"><%= clerk.user.first_name %></span>
       <button onclick="Clerk.signOut().then(() => {window.location.href = '/'})" class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded">
         Sign Out
       </button>
