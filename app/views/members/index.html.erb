@@ -1,0 +1,125 @@
+<!-- app/views/members/index.html.erb -->
+<div class="bg-white rounded-lg shadow-md p-6">
+  <div class="flex flex-wrap items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold">Members Directory</h1>
+    
+    <div class="mt-4 md:mt-0">
+      <div class="inline-flex rounded-md shadow-sm">
+        <%= link_to "All Members", members_path, class: "px-4 py-2 text-sm font-medium #{@filter == 'all' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'} border border-gray-300 rounded-l-lg" %>
+        <%= link_to "Pending", members_path(filter: 'pending'), class: "px-4 py-2 text-sm font-medium #{@filter == 'pending' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'} border-t border-b border-r border-gray-300" %>
+        <%= link_to "Active", members_path(filter: 'active'), class: "px-4 py-2 text-sm font-medium #{@filter == 'active' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'} border-t border-b border-r border-gray-300" %>
+        <%= link_to "Suspended", members_path(filter: 'suspended'), class: "px-4 py-2 text-sm font-medium #{@filter == 'suspended' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'} border-t border-b border-r border-gray-300 rounded-r-lg" %>
+      </div>
+    </div>
+  </div>
+  
+  <% if @members.any? %>
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="py-3 px-4 border-b text-left">Name</th>
+            <th class="py-3 px-4 border-b text-left">Email</th>
+            <th class="py-3 px-4 border-b text-left">Property</th>
+            <th class="py-3 px-4 border-b text-left">Role</th>
+            <th class="py-3 px-4 border-b text-left">Status</th>
+            <th class="py-3 px-4 border-b text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @members.each do |member| %>
+            <tr class="hover:bg-gray-50">
+              <td class="py-3 px-4 border-b"><%= member.full_name %></td>
+              <td class="py-3 px-4 border-b"><%= member.email %></td>
+              <td class="py-3 px-4 border-b"><%= member.property_address.present? ? member.property_address : "Not provided" %></td>
+              <td class="py-3 px-4 border-b"><span class="<%= member.admin? ? 'text-red-600 font-semibold' : (member.manager? ? 'text-blue-600 font-semibold' : '') %>"><%= member.role.capitalize %></span></td>
+              <td class="py-3 px-4 border-b">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                  <%= case member.account_status
+                    when 'pending' then 'bg-yellow-100 text-yellow-800'
+                    when 'active' then 'bg-green-100 text-green-800'
+                    when 'suspended' then 'bg-red-100 text-red-800'
+                    end %>">
+                  <%= member.account_status.capitalize %>
+                </span>
+              </td>
+              <td class="py-3 px-4 border-b text-center">
+                <%= link_to "View", member_path(member), class: "bg-blue-500 text-white py-1 px-3 rounded text-sm inline-block mr-1" %>
+                
+                <% if member.pending? %>
+                  <%= button_to "Approve", approve_member_path(member), method: :post, class: "bg-green-500 text-white py-1 px-3 rounded text-sm inline-block mr-1" %>
+                <% elsif member.active? %>
+                  <%= button_to "Suspend", suspend_member_path(member), method: :post, class: "bg-red-500 text-white py-1 px-3 rounded text-sm inline-block mr-1" %>
+                <% elsif member.suspended? %>
+                  <%= button_to "Reactivate", approve_member_path(member), method: :post, class: "bg-green-500 text-white py-1 px-3 rounded text-sm inline-block mr-1" %>
+                <% end %>
+                
+                <% if current_member.admin? && !member.admin? %>
+                  <div class="relative inline-block text-left mt-2">
+                    <div>
+                      <button type="button" id="role-menu-button-<%= member.id %>" class="inline-flex justify-center w-full px-3 py-1 text-sm font-medium text-white bg-gray-600 rounded hover:bg-gray-700" aria-expanded="true" aria-haspopup="true">
+                        Promote
+                        <svg class="-mr-1 ml-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                          <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div id="role-menu-<%= member.id %>" class="hidden origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10" role="menu" aria-orientation="vertical" aria-labelledby="role-menu-button" tabindex="-1">
+                      <div class="py-1" role="none">
+                        <% unless member.manager? %>
+                          <%= button_to "Promote to Manager", promote_member_path(member, role: 'manager'), method: :post, class: "text-gray-700 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" %>
+                        <% end %>
+                        <%= button_to "Promote to Admin", promote_member_path(member, role: 'admin'), method: :post, class: "text-gray-700 block w-full text-left px-4 py-2 text-sm hover:bg-gray-100" %>
+                      </div>
+                    </div>
+                  </div>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="bg-gray-50 p-6 text-center rounded">
+      <p class="text-gray-700">No members found matching the selected filter.</p>
+    </div>
+  <% end %>
+  
+  <div class="mt-6">
+    <%= link_to "Return to Dashboard", dashboard_members_path, class: "text-red-600 hover:text-red-800" %>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Handle role dropdown menus
+    const roleMenuButtons = document.querySelectorAll('[id^="role-menu-button-"]');
+    
+    roleMenuButtons.forEach(button => {
+      const memberId = button.id.split('-').pop();
+      const menu = document.getElementById(`role-menu-${memberId}`);
+      
+      button.addEventListener('click', function() {
+        // Hide all other menus
+        document.querySelectorAll('[id^="role-menu-"]').forEach(m => {
+          if (m.id !== `role-menu-${memberId}`) {
+            m.classList.add('hidden');
+          }
+        });
+        
+        // Toggle this menu
+        menu.classList.toggle('hidden');
+      });
+    });
+    
+    // Close menus when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('[id^="role-menu-button-"]')) {
+        document.querySelectorAll('[id^="role-menu-"]').forEach(menu => {
+          menu.classList.add('hidden');
+        });
+      }
+    });
+  });
+</script>

@@ -1,4 +1,4 @@
-# app/services/clerk_member_service.rb
+# app/services/clerk_member_service.rb (updated)
 class ClerkMemberService
   def self.create_or_update_from_clerk_user(clerk_user)
     # Find existing member by clerk_user_id or email
@@ -20,7 +20,8 @@ class ClerkMemberService
         last_name: clerk_user.last_name,
         email: clerk_user.email_addresses.find { |e| e.id == clerk_user.primary_email_address_id }.email_address,
         property_address: '',
-        account_status: 'pending'
+        account_status: 'pending',
+        role: 'member'
       )
     end
     

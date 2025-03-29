@@ -1,0 +1,98 @@
+<!-- app/views/members/show.html.erb -->
+<div class="bg-white rounded-lg shadow-md p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold">Member Profile</h1>
+    
+    <% if current_member.can_manage? %>
+      <div>
+        <%= link_to "Back to Members", members_path, class: "text-red-600 hover:text-red-800" %>
+      </div>
+    <% end %>
+  </div>
+  
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="bg-gray-100 p-4 rounded">
+      <h2 class="text-xl font-bold mb-4">Personal Information</h2>
+      
+      <div class="mb-4">
+        <p class="text-gray-600 text-sm">Full Name</p>
+        <p class="font-semibold"><%= @member.full_name %></p>
+      </div>
+      
+      <div class="mb-4">
+        <p class="text-gray-600 text-sm">Email Address</p>
+        <p class="font-semibold"><%= @member.email %></p>
+      </div>
+      
+      <div class="mb-4">
+        <p class="text-gray-600 text-sm">Property Address</p>
+        <p class="font-semibold"><%= @member.property_address.present? ? @member.property_address : "Not provided" %></p>
+      </div>
+      
+      <div class="mb-4">
+        <p class="text-gray-600 text-sm">Account Status</p>
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+          <%= case @member.account_status
+            when 'pending' then 'bg-yellow-100 text-yellow-800'
+            when 'active' then 'bg-green-100 text-green-800'
+            when 'suspended' then 'bg-red-100 text-red-800'
+            end %>">
+          <%= @member.account_status.capitalize %>
+        </span>
+      </div>
+      
+      <div class="mb-4">
+        <p class="text-gray-600 text-sm">Role</p>
+        <p class="font-semibold <%= @member.admin? ? 'text-red-600' : (@member.manager? ? 'text-blue-600' : '') %>">
+          <%= @member.role.capitalize %>
+        </p>
+      </div>
+      
+      <div>
+        <p class="text-gray-600 text-sm">Member Since</p>
+        <p class="font-semibold"><%= @member.created_at.strftime("%B %d, %Y") %></p>
+      </div>
+    </div>
+    
+    <div class="bg-gray-100 p-4 rounded">
+      <h2 class="text-xl font-bold mb-4">Actions</h2>
+      
+      <% if current_member.id == @member.id || current_member.can_manage? %>
+        <div class="mb-4">
+          <%= link_to "Edit Profile", edit_member_path(@member), class: "block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded text-center" %>
+        </div>
+      <% end %>
+      
+      <% if current_member.can_manage? && current_member.id != @member.id %>
+        <% if @member.pending? %>
+          <div class="mb-4">
+            <%= button_to "Approve Member", approve_member_path(@member), method: :post, class: "block w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded text-center" %>
+          </div>
+        <% elsif @member.active? %>
+          <div class="mb-4">
+            <%= button_to "Suspend Member", suspend_member_path(@member), method: :post, class: "block w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded text-center" %>
+          </div>
+        <% elsif @member.suspended? %>
+          <div class="mb-4">
+            <%= button_to "Reactivate Member", approve_member_path(@member), method: :post, class: "block w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded text-center" %>
+          </div>
+        <% end %>
+        
+        <% if current_member.admin? && !@member.admin? %>
+          <h3 class="font-semibold text-gray-700 mt-6 mb-2">Role Management</h3>
+          <div class="space-y-2">
+            <% unless @member.manager? %>
+              <%= button_to "Promote to Manager", promote_member_path(@member, role: 'manager'), method: :post, class: "block w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded text-center" %>
+            <% end %>
+            
+            <%= button_to "Promote to Admin", promote_member_path(@member, role: 'admin'), method: :post, class: "block w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded text-center" %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+  
+  <div class="mt-8">
+    <%= link_to "Back to Dashboard", dashboard_members_path, class: "text-red-600 hover:text-red-800" %>
+  </div>
+</div>

@@ -1,45 +1,147 @@
-# app/views/members/dashboard.html.erb
+<!-- app/views/members/dashboard.html.erb (updated for managers/admins) -->
 <div class="bg-white rounded-lg shadow-md p-6">
   <h1 class="text-3xl font-bold mb-6">Welcome, <%= @member.first_name %>!</h1>
   
-  <div class="grid md:grid-cols-2 gap-6 mb-6">
-    <div class="bg-gray-100 p-4 rounded">
-      <h2 class="text-xl font-bold mb-3">Your Information</h2>
-      <p><strong>Name:</strong> <%= @member.full_name %></p>
-      <p><strong>Email:</strong> <%= @member.email %></p>
-      <p><strong>Property Address:</strong> <%= @member.property_address %></p>
-      <p><strong>Account Status:</strong> <span class="<%= @member.active? ? 'text-green-600' : 'text-yellow-600' %>">
-        <%= @member.account_status.capitalize %>
-      </span></p>
+  <% if @member.can_manage? %>
+    <!-- Admin/Manager Dashboard -->
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div class="bg-gray-100 p-4 rounded">
+        <h2 class="text-xl font-bold mb-3">Your Information</h2>
+        <p><strong>Name:</strong> <%= @member.full_name %></p>
+        <p><strong>Email:</strong> <%= @member.email %></p>
+        <p><strong>Property Address:</strong> <%= @member.property_address %></p>
+        <p><strong>Role:</strong> <span class="font-semibold text-red-600"><%= @member.role.capitalize %></span></p>
+        
+        <div class="mt-4">
+          <%= link_to "Edit Profile", edit_member_path(@member), class: "text-red-600 hover:text-red-800" %>
+        </div>
+      </div>
       
-      <div class="mt-4">
-        <%= link_to "Edit Profile", edit_member_path(@member), class: "text-red-600 hover:text-red-800" %>
+      <div class="bg-gray-100 p-4 rounded">
+        <h2 class="text-xl font-bold mb-3">Member Status Overview</h2>
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div class="bg-yellow-100 p-3 rounded text-center">
+            <span class="block text-2xl font-bold text-yellow-700"><%= @pending_count %></span>
+            <span class="text-sm">Pending</span>
+          </div>
+          <div class="bg-green-100 p-3 rounded text-center">
+            <span class="block text-2xl font-bold text-green-700"><%= @active_count %></span>
+            <span class="text-sm">Active</span>
+          </div>
+          <div class="bg-red-100 p-3 rounded text-center">
+            <span class="block text-2xl font-bold text-red-700"><%= @suspended_count %></span>
+            <span class="text-sm">Suspended</span>
+          </div>
+        </div>
+        
+        <div class="mt-2 text-right">
+          <%= link_to "View All Members", members_path, class: "text-red-600 hover:text-red-800" %>
+        </div>
       </div>
     </div>
     
-    <div class="bg-gray-100 p-4 rounded">
-      <h2 class="text-xl font-bold mb-3">Community Updates</h2>
-      <div class="mb-3">
-        <h3 class="font-bold">Annual HOA Meeting</h3>
-        <p>The annual HOA meeting will be held on April 15th at the community center.</p>
-      </div>
+    <!-- Pending Approvals Section -->
+    <div class="bg-white border border-yellow-300 rounded-lg p-4 mb-6">
+      <h2 class="text-xl font-bold mb-3">Pending Approvals</h2>
       
-      <div>
-        <h3 class="font-bold">Pool Opening</h3>
-        <p>The community pool will open for the season on May 1st.</p>
-      </div>
-    </div>
-  </div>
-  
-  <div class="grid md:grid-cols-2 gap-6">
-    <div class="bg-gray-100 p-4 rounded">
-      <h2 class="text-xl font-bold mb-3">Recent Documents</h2>
-      <p class="text-gray-700">No documents available yet.</p>
+      <% if @recent_pending.any? %>
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="py-2 px-4 border-b text-left">Name</th>
+                <th class="py-2 px-4 border-b text-left">Email</th>
+                <th class="py-2 px-4 border-b text-left">Property</th>
+                <th class="py-2 px-4 border-b text-left">Registered</th>
+                <th class="py-2 px-4 border-b text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @recent_pending.each do |member| %>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-2 px-4 border-b"><%= member.full_name %></td>
+                  <td class="py-2 px-4 border-b"><%= member.email %></td>
+                  <td class="py-2 px-4 border-b"><%= member.property_address.present? ? member.property_address : "Not provided" %></td>
+                  <td class="py-2 px-4 border-b"><%= member.created_at.strftime("%b %d, %Y") %></td>
+                  <td class="py-2 px-4 border-b text-center">
+                    <%= button_to "Approve", approve_member_path(member), method: :post, class: "bg-green-500 text-white py-1 px-3 rounded text-sm inline-block mr-1" %>
+                    <%= link_to "Details", member_path(member), class: "bg-blue-500 text-white py-1 px-3 rounded text-sm inline-block" %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="mt-4 text-right">
+          <%= link_to "View All Pending Members", members_path(filter: 'pending'), class: "text-yellow-600 hover:text-yellow-800" %>
+        </div>
+      <% else %>
+        <p class="text-gray-700">There are no pending member approvals at this time.</p>
+      <% end %>
     </div>
     
-    <div class="bg-gray-100 p-4 rounded">
-      <h2 class="text-xl font-bold mb-3">Payment Status</h2>
-      <p class="text-gray-700">No payments due at this time.</p>
+    <!-- Community Updates Section (available to all users) -->
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-gray-100 p-4 rounded">
+        <h2 class="text-xl font-bold mb-3">Community Updates</h2>
+        <div class="mb-3">
+          <h3 class="font-bold">Annual HOA Meeting</h3>
+          <p>The annual HOA meeting will be held on April 15th at the community center.</p>
+        </div>
+        
+        <div>
+          <h3 class="font-bold">Pool Opening</h3>
+          <p>The community pool will open for the season on May 1st.</p>
+        </div>
+      </div>
+      
+      <div class="bg-gray-100 p-4 rounded">
+        <h2 class="text-xl font-bold mb-3">Recent Documents</h2>
+        <p class="text-gray-700">No new documents have been added recently.</p>
+      </div>
     </div>
-  </div>
+  <% else %>
+    <!-- Regular Member Dashboard (existing content) -->
+    <div class="grid md:grid-cols-2 gap-6 mb-6">
+      <div class="bg-gray-100 p-4 rounded">
+        <h2 class="text-xl font-bold mb-3">Your Information</h2>
+        <p><strong>Name:</strong> <%= @member.full_name %></p>
+        <p><strong>Email:</strong> <%= @member.email %></p>
+        <p><strong>Property Address:</strong> <%= @member.property_address %></p>
+        <p><strong>Account Status:</strong> <span class="<%= @member.active? ? 'text-green-600' : 'text-yellow-600' %>">
+          <%= @member.account_status.capitalize %>
+        </span></p>
+        
+        <div class="mt-4">
+          <%= link_to "Edit Profile", edit_member_path(@member), class: "text-red-600 hover:text-red-800" %>
+        </div>
+      </div>
+      
+      <div class="bg-gray-100 p-4 rounded">
+        <h2 class="text-xl font-bold mb-3">Community Updates</h2>
+        <div class="mb-3">
+          <h3 class="font-bold">Annual HOA Meeting</h3>
+          <p>The annual HOA meeting will be held on April 15th at the community center.</p>
+        </div>
+        
+        <div>
+          <h3 class="font-bold">Pool Opening</h3>
+          <p>The community pool will open for the season on May 1st.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-gray-100 p-4 rounded">
+        <h2 class="text-xl font-bold mb-3">Recent Documents</h2>
+        <p class="text-gray-700">No documents available yet.</p>
+      </div>
+      
+      <div class="bg-gray-100 p-4 rounded">
+        <h2 class="text-xl font-bold mb-3">Payment Status</h2>
+        <p class="text-gray-700">No payments due at this time.</p>
+      </div>
+    </div>
+  <% end %>
 </div>
