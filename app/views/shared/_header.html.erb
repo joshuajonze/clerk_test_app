@@ -17,15 +17,15 @@
         <li><a href="#" class="block py-2 md:py-1 md:px-4 hover:text-red-600">Documents</a></li>
         <li><a href="#" class="block py-2 md:py-1 md:px-4 hover:text-red-600">Contact</a></li>
         <% if clerk.user? %>
-  <li>
-    <div class="block py-2 md:py-1 md:px-4">
-      <span class="mr-2"><%= clerk.user.first_name %></span>
-      <button onclick="Clerk.signOut().then(() => {window.location.href = '/'})" class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded">
-        Sign Out
-      </button>
-    </div>
-  </li>
-<% else %>
+          <li>
+            <div class="block py-2 md:py-1 md:px-4">
+              <span class="mr-2"><%= clerk.user.first_name %></span>
+              <button id="logout-button" class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded">
+                Sign Out
+              </button>
+            </div>
+          </li>
+        <% else %>
           <li>
             <button id="open-auth-modal" class="bg-red-600 hover:bg-red-700 text-white py-1 px-4 rounded ml-md-4 mt-2 md:mt-0">
               Sign In / Register
@@ -65,6 +65,46 @@
         if (event.target === authModal) {
           authModal.classList.add('hidden');
         }
+      });
+    }
+    
+    // Add event listener for logout button
+    const logoutButton = document.getElementById('logout-button');
+    if (logoutButton) {
+      logoutButton.addEventListener('click', function() {
+        // Prevent multiple clicks
+        logoutButton.disabled = true;
+        logoutButton.innerText = 'Signing out...';
+        
+        // First approach: try client-side logout
+        try {
+          // Try to clear basic cookies and storage that might be related to Clerk
+          document.cookie.split(';').forEach(function(c) {
+            document.cookie = c.trim().split('=')[0] + '=;' + 'expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;';
+          });
+          
+          // Clear localStorage
+          localStorage.clear();
+          
+          // Clear sessionStorage
+          sessionStorage.clear();
+        } catch (e) {
+          console.error('Error clearing client-side data:', e);
+        }
+        
+        // Second approach: call our backend to handle server-side cleanup
+        fetch('/api/sign-out-direct', {
+          method: 'POST',
+          headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+            'Content-Type': 'application/json'
+          },
+          credentials: 'same-origin'
+        })
+        .finally(function() {
+          // No matter what, redirect to homepage
+          window.location.href = '/';
+        });
       });
     }
   });

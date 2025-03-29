@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <%= csrf_meta_tags %>
     <title><%= content_for(:title) || "Quail Creek HOA" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -41,5 +42,33 @@
     <% unless clerk.user? %>
       <%= render 'shared/auth_modal' %>
     <% end %>
+
+    <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Function to get cookie value by name
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    
+    // Check if the clerk_sign_out cookie exists
+    if (getCookie('clerk_sign_out') === 'true') {
+      console.log('Signing out from Clerk...');
+      
+      // Clear the sign-out cookie
+      document.cookie = 'clerk_sign_out=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      
+      // If Clerk is loaded, sign out
+      if (window.Clerk) {
+        window.Clerk.signOut().then(() => {
+          console.log('Clerk sign-out successful');
+        }).catch(error => {
+          console.error('Clerk sign-out error:', error);
+        });
+      }
+    }
+  });
+</script>
   </body>
 </html>

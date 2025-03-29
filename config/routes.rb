@@ -2,6 +2,8 @@
 Rails.application.routes.draw do
   root 'home#index'
   
+post '/sign-out', to: 'sessions#destroy'
+post '/api/sign-out', to: 'sessions#api_sign_out'
   # Session management
   get 'sessions/after_signup', to: 'sessions#after_signup'
   
